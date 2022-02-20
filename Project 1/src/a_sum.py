@@ -1,23 +1,14 @@
-from sys import stdin, stdout
-
-
-def readln():
-    return stdin.readline().rstrip()
-
-
-def outln(n):
-    stdout.write(str(n))
-    stdout.write("\n")
+import input as inp
 
 
 def main():
-    line = readln()
+    line = inp.readln()
     line_splitted = line.split()
     num_1 = int(line_splitted[0])
     num_2 = int(line_splitted[1])
     num_sum = num_1 + num_2
 
-    outln(num_sum)
+    inp.outln(num_sum)
 
 
 if __name__ == '__main__':
