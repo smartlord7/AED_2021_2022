@@ -1,96 +1,105 @@
-from sys import stdin, stdout
 
 
 class Node:
-    def __init__(self, user_name, cartao, data):
-        self.user_name = user_name
-        self.card_dates = {cartao: data}
+    def __init__(self, user_name, card, data):
         self.left_node = None
         self.right_node = None
-
-    def balance(self):
-        left = 0
-
-        if self.left_node:
-            left = self.left_node.get_depth()
-        right = 0
-
-        if self.right_node:
-            right = self.right_node.get_depth()
-
-        return left - right
+        self.user_name = user_name
+        self.card_dates = dict()
+        self.card_dates[card] = data
 
     def get_depth(self):
-        left = 0
+        left_node = int()
 
         if self.left_node:
-            left = self.left_node.get_depth()
+            left_node = self.left_node.get_depth()
 
-        right = 0
+        right_node = int()
 
         if self.right_node:
-            right = self.right_node.get_depth()
+            right_node = self.right_node.get_depth()
 
-        return 1 + max(left, right)
+        return 1 + max(left_node, right_node)
 
-    def rot_right_node(self):
-        self.user_name, self.card_dates, self.left_node.user_name, self.left_node.card_dates = self.left_node.user_name, self.left_node.card_dates, self.user_name, self.card_dates
-        old_right_node = self.right_node
-        self.left_node, self.right_node = self.left_node.left_node, self.left_node
-        self.right_node.left_node, self.right_node.right_node = self.right_node.right_node, old_right_node
+    def get_balance(self):
+        left_node = int()
 
-    def rot_left_node(self):
+        if self.left_node:
+            left_node = self.left_node.get_depth()
+        right_node = int()
+
+        if self.right_node:
+            right_node = self.right_node.get_depth()
+
+        return left_node - right_node
+
+    def rotate_left(self):
         self.user_name, self.card_dates, self.right_node.user_name, self.right_node.card_dates = self.right_node.user_name, self.right_node.card_dates, self.user_name, self.card_dates
         old_left_node = self.left_node
         self.left_node, self.right_node = self.right_node, self.right_node.right_node
         self.left_node.left_node, self.left_node.right_node = old_left_node, self.left_node.left_node
 
-    def rot_right_node_left_node(self):
-        self.right_node.rot_right_node()
-        self.rot_left_node()
+    def rotate_right(self):
+        self.user_name, self.card_dates, self.left_node.user_name, self.left_node.card_dates = self.left_node.user_name, self.left_node.card_dates, self.user_name, self.card_dates
+        old_right_node = self.right_node
+        self.left_node, self.right_node = self.left_node.left_node, self.left_node
+        self.right_node.left_node, self.right_node.right_node = self.right_node.right_node, old_right_node
 
-    def rot_left_node_right_node(self):
-        self.left_node.rot_left_node()
-        self.rot_right_node()
+    def rotate_left_right(self):
+        self.left_node.rotate_left()
+        self.rotate_right()
+
+    def rotate_right_left(self):
+        self.right_node.rotate_right()
+        self.rotate_left()
 
     def check_balance(self):
-        balance = self.balance()
-        if balance > 1:
-            if self.left_node and self.left_node.balance() > 0:
-                self.rot_right_node()
+        get_balance = self.get_balance()
+        if get_balance > 1:
+            if self.left_node and self.left_node.get_balance() > 0:
+                self.rotate_right()
             else:
-                self.rot_left_node_right_node()
-        elif balance < -1:
-            if self.right_node and self.right_node.balance() < 0:
-                self.rot_left_node()
+                self.rotate_left_right()
+        elif get_balance < -1:
+            if self.right_node and self.right_node.get_balance() < 0:
+                self.rotate_left()
             else:
-                self.rot_right_node_left_node()
+                self.rotate_right_left()
 
-    def add(self, user_name, cartao, data):
+    def print_tree(self):
+        if self.left_node:
+            self.left_node.print_tree()
+
+        print(self.__repr__() + "")
+
+        if self.right_node:
+            self.right_node.print_tree()
+
+    def add(self, user_name, card, data):
         if user_name == self.user_name:
-            if cartao not in self.card_dates.keys():
-                self.card_dates[cartao] = data
+            if card not in self.card_dates.keys():
+                self.card_dates[card] = data
 
-                stdout.write("NOVO CARTAO INSERIDO\n")
+                print("NOVO CARTAO INSERIDO")
             else:
-                self.card_dates[cartao] = data
+                self.card_dates[card] = data
 
-                stdout.write("CARTAO ATUALIZADO\n")
+                print("CARTAO ATUALIZADO")
 
             return False
 
         elif user_name < self.user_name:
             if not self.left_node:
-                self.left_node = Node(user_name, cartao, data)
+                self.left_node = Node(user_name, card, data)
             else:
-                if not self.left_node.add(user_name, cartao, data):
+                if not self.left_node.add(user_name, card, data):
 
                     return False
         else:
             if not self.right_node:
-                self.right_node = Node(user_name, cartao, data)
+                self.right_node = Node(user_name, card, data)
             else:
-                if not self.right_node.add(user_name, cartao, data):
+                if not self.right_node.add(user_name, card, data):
                     
                     return False
 
@@ -98,95 +107,86 @@ class Node:
 
         return True
 
-    def traverse_tree(self):
-        if self.left_node:
-            self.left_node.traverse_tree()
-
-        stdout.write(self.__repr__() + "\n")
-
-        if self.right_node:
-            self.right_node.traverse_tree()
-
-    def search(self, user_name):
+    def find_by_user_name(self, user_name):
         if user_name == self.user_name:
             for key in sorted(self.card_dates):
-                stdout.write(key + " " + self.card_dates[key] + "\n")
+                print(key + " " + self.card_dates[key] + "")
 
                 continue
 
-            stdout.write("FIM\n")
+            print("FIM")
 
             return True
 
         elif user_name < self.user_name:
             if self.left_node:
-                if self.left_node.search(user_name):
+                if self.left_node.find_by_user_name(user_name):
 
                     return True
         else:
             if self.right_node:
-                if self.right_node.search(user_name):
+                if self.right_node.find_by_user_name(user_name):
 
                     return True
 
         return False
 
-    def delete(self):
+    def erase(self):
         self = None
 
     def __repr__(self):
-        cartoes = ""
+        cards = ""
         for key in sorted(self.card_dates):
-            cartoes += key + " " + self.card_dates[key] + " "
+            cards += key + " " + self.card_dates[key] + " "
 
-        node_info = self.user_name + " " + cartoes
+        node_info = self.user_name + " " + cards
 
         return node_info.rstrip()
 
 
 def read_input():
-    input = []
+    inp = []
 
-    line = stdin.readline().rstrip().split()
-    while line[0] != "FIM":
-        input.append(line)
-        line = stdin.readline().rstrip().split()
+    lines = input().rstrip().split()
+    while lines[0] != "FIM":
+        inp.append(lines)
+        lines = input().rstrip().split()
 
-    return input
+    return inp
 
 
 def main():
-    lines = read_input()
+    input_lines = read_input()
     flag = True
-    root = None
+    tree_root = None
 
-    for line in lines: 
+    for line in input_lines: 
         if flag and line[0] == "ACRESCENTA":
-            root = Node(line[1], line[2], line[3])
-            stdout.write("NOVO UTILIZADOR CRIADO\n")
+            tree_root = Node(line[1], line[2], line[3])
+            print("NOVO UTILIZADOR CRIADO")
 
             flag = False
 
         elif line[0] == "ACRESCENTA":
-            if root.add(line[1], line[2], line[3]):
-                stdout.write("NOVO UTILIZADOR CRIADO\n")
+            if tree_root.add(line[1], line[2], line[3]):
+                print("NOVO UTILIZADOR CRIADO")
 
                 continue
 
         elif line[0] == "CONSULTA":
-            if not root.search(line[1]):
-                stdout.write("NAO ENCONTRADO\n")
+            if not tree_root.find_by_user_name(line[1]):
+                print("NAO ENCONTRADO")
 
                 continue
 
         elif line[0] == "LISTAGEM":
-            root.traverse_tree()
-            stdout.write("FIM\n")
+            tree_root.print_tree()
+            print("FIM")
 
         elif line[0] == "APAGA":
-            root.delete()
+            tree_root.erase()
             flag = True
-            stdout.write("LISTAGEM APAGADA\n")
+            print("LISTAGEM APAGADA")
 
 
 if __name__ == '__main__':
